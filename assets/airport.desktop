@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Airport
+Version=0.1.0
+Comment=A central platform to manage portage
+Exec=/usr/bin/airport_qt
+Icon=package-manager-icon
+Terminal=false
+Categories=System;Utilities;
