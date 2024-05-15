@@ -7,3 +7,4 @@ don't need (such as a Qt GUI interface).
 ## Requirements
 
 - Python 3.10+
+- PySide6
