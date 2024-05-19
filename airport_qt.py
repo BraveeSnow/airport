@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+from portage.package.ebuild.config import config as PortageConfig
 from signal import signal, SIGINT, SIG_DFL
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -10,6 +11,8 @@ from PySide6.QtWidgets import (
     QTabWidget,
     QWidget,
 )
+
+from widgets.use import AirportUse
 from widgets.log import AirportLog
 
 
@@ -17,7 +20,7 @@ class AirportMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Airport")
-        
+
         main_layout = QVBoxLayout()
         main_widget = QWidget()
         main_widget.setLayout(main_layout)
@@ -25,7 +28,7 @@ class AirportMainWindow(QMainWindow):
         tabs = QTabWidget()
         main_layout.addWidget(tabs)
 
-        use_flag_tab = QWidget()
+        use_flag_tab = AirportUse()
         use_flag_icon = QIcon.fromTheme("flag")
         tabs.addTab(use_flag_tab, use_flag_icon, "USE Flags")
 
