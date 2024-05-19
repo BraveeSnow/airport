@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from portage.dbapi.porttree import portdbapi as PortageTree
-from portage.versions import cpv_getkey, cpv_getversion
+from portage.versions import cpv_getversion
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (

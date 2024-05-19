@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-from portage.package.ebuild.config import config as PortageConfig
 from signal import signal, SIGINT, SIG_DFL
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
