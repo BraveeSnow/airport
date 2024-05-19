@@ -16,6 +16,15 @@ from PySide6.QtWidgets import (
 
 
 @dataclass
+class UseFlag:
+
+    name: str
+    is_system: bool
+    is_global: bool
+    is_local: bool
+
+
+@dataclass
 class Package:
     """Data class for package information obtained from portage's dbapi."""
 
@@ -23,6 +32,9 @@ class Package:
     category: str
     versions: list[str]
     repos: list[str]
+
+    def get_latest_cpv(self) -> str:
+        return f"{self.category}/{self.name}-{self.versions[len(self.versions) - 1]}"
 
 
 class AirportUse(QWidget):
@@ -43,7 +55,7 @@ class AirportUse(QWidget):
         upper_container_layout = QGridLayout()
         upper_container.setLayout(upper_container_layout)
         lower_container = QWidget()
-        lower_container_layout = QHBoxLayout()
+        lower_container_layout = QGridLayout()
         lower_container.setLayout(lower_container_layout)
         splitter.addWidget(upper_container)
         splitter.addWidget(lower_container)
@@ -62,6 +74,7 @@ class AirportUse(QWidget):
         package_filter.setText("Filter")
         package_filter.setIcon(QIcon.fromTheme("dialog-filters"))
         package_list.setHeaderLabels(["Name", "Repository"])
+        package_list.currentItemChanged.connect(self.show_package_info)
 
         upper_container_layout.addWidget(package_search, 0, 0)
         upper_container_layout.addWidget(package_search_trigger, 0, 1)
@@ -72,33 +85,51 @@ class AirportUse(QWidget):
         self.package_list = package_list
 
         # lower container children
-        package_meta = QTreeWidget()
         package_flags = QTreeWidget()
+        edit_flags = QPushButton(QIcon.fromTheme("edit"), "Edit Flags")
+        more_info = QPushButton(QIcon.fromTheme("help-info"), "More Info")
 
-        package_meta.setHeaderLabels(["Meta", "Value"])
-        package_flags.setHeaderLabels(["Flag", "Global", "Local"])
+        package_flags.setHeaderLabels(["Flag", "Default", "Global", "Local"])
+        edit_flags.setText("Edit Flags")
 
-        lower_container_layout.addWidget(package_meta)
-        lower_container_layout.addWidget(package_flags)
+        lower_container_layout.addWidget(package_flags, 0, 0, 3, 1)
+        lower_container_layout.addWidget(edit_flags, 0, 1)
+        lower_container_layout.addWidget(more_info, 1, 1)
 
-        self.package_meta = package_meta
         self.package_flags = package_flags
 
     def search_atom(self):
         self.package_list.clear()
-        self.package_meta.clear()
         self.package_flags.clear()
 
         for package in self.portage_packages:
             if self.package_search.text() in package.name:
-                self.package_list.addTopLevelItem(
-                    QTreeWidgetItem(
-                        [
-                            "/".join([package.category, package.name]),
-                            ", ".join(package.repos),
-                        ]
-                    )
+                p = QTreeWidgetItem(
+                    [
+                        "/".join([package.category, package.name]),
+                        ", ".join(package.repos),
+                    ]
                 )
+                p.setData(0, 1, package)
+                self.package_list.addTopLevelItem(p)
+
+        self.package_list.resizeColumnToContents(0)
+
+    def show_package_info(self, current: QTreeWidgetItem, _: QTreeWidgetItem):
+        catpkg: Package = current.data(0, 1)
+        uses = parse_iuse(self.porttree.aux_get(catpkg.get_latest_cpv(), ["IUSE"])[0])
+
+        for use in uses:
+            self.package_flags.addTopLevelItem(
+                QTreeWidgetItem(
+                    [
+                        use.name,
+                        str(use.is_system),
+                        str(use.is_global),
+                        str(use.is_local),
+                    ]
+                )
+            )
 
 
 def compile_package_list(porttree: PortageTree) -> list[Package]:
@@ -114,3 +145,18 @@ def compile_package_list(porttree: PortageTree) -> list[Package]:
 
     porttree.melt()
     return packages
+
+
+def parse_iuse(uses: str) -> list[UseFlag]:
+    flag_strs = uses.split(" ")
+    flags = []
+
+    for flag_name in flag_strs:
+        system_enabled = False
+
+        if flag_name.startswith("+"):
+            system_enabled = True
+
+        flags.append(UseFlag(flag_name.removeprefix("+"), system_enabled, False, False))
+
+    return flags
