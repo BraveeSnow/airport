@@ -11,8 +11,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from widgets.use import AirportUse
-from widgets.log import AirportLog
+from airport.qt.widgets.use import AirportUse
+from airport.qt.widgets.log import AirportLog
 
 
 class AirportMainWindow(QMainWindow):

@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from util.color import ColorType, SystemColorScheme
+from airport.util.color import ColorType, SystemColorScheme
 
 
 class LogEntry:
